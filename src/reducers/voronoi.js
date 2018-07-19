@@ -9,7 +9,9 @@ const DEFAULT_STATE = {
   longitude: MAP_OPTIONS.longitude,
   city: undefined,
   cityInputValue: '',
-  cityHover: false
+  cityHover: false,
+  cityBoundingBox: undefined,
+  cityGeoJson: undefined
 }
 
 export default createReducer(
@@ -20,13 +22,11 @@ export default createReducer(
       latitude,
       zoom
     }),
-    [a.selectCity]: (state, city) => {
-      console.log(city)
-      return { ...state, city }
-    },
+    [a.selectCity]: (state, city) => ({ ...state, city }),
     [a.changeCityInputValue]: (state, cityInputValue) => ({ ...state, cityInputValue}),
     [a.toggleCityHover]: (state) => ({ ...state, cityHover: !state.cityHover }),
-    [a.startSearchingNewCity]: (state) => ({ ...state, city: undefined, cityInputValue: '', cityHover: false})
+    [a.startSearchingNewCity]: (state) => ({ ...state, city: undefined, cityInputValue: '', cityHover: false}),
+    [a.receiveCity]: (state, { boundingbox, geojson }) => ({ ...state, cityBoundingBox: boundingbox, cityGeoJson: geojson})
   },
   DEFAULT_STATE
 )

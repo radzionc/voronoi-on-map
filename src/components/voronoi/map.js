@@ -32,31 +32,27 @@ class Map extends React.Component {
     )
   }
 
-  
-  // componentDidUpdate() {
-  //   const { onMapUpdate, startLocation, endLocation } = this.props
+  componentDidMount() {
+    this.map = this.refs.reactMap.getMap()
+  }
 
-  //   if (startLocation && endLocation && this.map) {
-  //     const locations = [startLocation, endLocation]
-  //     const sortedByLat = _.sortBy(locations, 'latitude')
-  //     const sortedByLong = _.sortBy(locations, 'longitude')
-
-  //     const maxLat = sortedByLat[sortedByLat.length - 1].latitude
-  //     const minLat = sortedByLat[0].latitude
-  //     const maxLong = sortedByLong[sortedByLong.length - 1].longitude
-  //     const minLong = sortedByLong[0].longitude
-  //     this.map.fitBounds([[minLong, minLat], [maxLong, maxLat]], {
-  //       padding: 80
-  //     })
-  //     this.map.on('moveend', () =>
-  //       onMapUpdate({
-  //         zoom: this.map.getZoom(),
-  //         longitude: this.map.getCenter().lng,
-  //         latitude: this.map.getCenter().lat
-  //       })
-  //     )
-  //   }
-  // }
+  componentDidUpdate(prev) {
+    const { updateMap, cityBoundingBox } = this.props
+    if (prev.cityBoundingBox !== cityBoundingBox && this.map) {
+      const [minLng, maxLng, minLat, maxLat] = cityBoundingBox
+      console.log([[minLat, minLng], [maxLat, maxLng]])
+      this.map.fitBounds([[minLat, minLng], [maxLat, maxLng]], {
+        padding: 0
+      })
+      this.map.on('moveend', () =>
+        updateMap({
+          zoom: this.map.getZoom(),
+          longitude: this.map.getCenter().lng,
+          latitude: this.map.getCenter().lat
+        })
+      )
+    }
+  }
 }
 
 export default connectTo(
