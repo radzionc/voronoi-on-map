@@ -1,0 +1,48 @@
+{
+  "name": "voronoi",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@material-ui/core": "^1.4.0",
+    "cra-append-sw": "^2.3.0",
+    "downshift": "^2.0.16",
+    "keycode": "^2.2.0",
+    "lodash": "^4.17.5",
+    "react": "^16.4.1",
+    "react-document-title": "^2.0.3",
+    "react-dom": "^16.4.1",
+    "react-hotkeys": "^1.1.0",
+    "react-map-gl": "^3.3.0",
+    "react-onclickoutside": "^6.7.1",
+    "react-places-autocomplete": "^7.2.0",
+    "react-redux": "^5.0.7",
+    "react-scripts": "1.1.4",
+    "redux": "^3.7.2",
+    "redux-act": "^1.7.3",
+    "redux-devtools-extension": "^2.13.2",
+    "redux-form": "^7.3.0",
+    "redux-saga": "^0.16.0"
+  },
+  "scripts": {
+    "mockrun": "REACT_APP_MOCK=true react-scripts start",
+    "precommit": "lint-staged",
+    "start": "react-scripts start",
+    "build": "react-scripts build && cra-append-sw ./custom-sw.js",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "lint-staged": {
+    "*.{js,json}": [
+      "prettier --single-quote --write",
+      "git add"
+    ]
+  },
+  "prettier": {
+    "semi": false
+  },
+  "devDependencies": {
+    "husky": "^0.14.3",
+    "lint-staged": "^7.1.2",
+    "prettier": "^1.11.1"
+  }
+}
