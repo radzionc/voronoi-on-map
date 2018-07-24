@@ -11,7 +11,9 @@ const DEFAULT_STATE = {
   cityInputValue: '',
   cityHover: false,
   cityBoundingBox: undefined,
-  cityGeoJson: undefined
+  cityGeoJson: undefined,
+  unproject: x => x,
+  project: x => x,
 }
 
 export default createReducer(
@@ -21,6 +23,10 @@ export default createReducer(
       longitude,
       latitude,
       zoom
+    }),
+    [a.updateProjections]: (state, projectors) => ({
+      ...state,
+      ...projectors
     }),
     [a.selectCity]: (state, city) => ({ ...state, city }),
     [a.changeCityInputValue]: (state, cityInputValue) => ({ ...state, cityInputValue}),

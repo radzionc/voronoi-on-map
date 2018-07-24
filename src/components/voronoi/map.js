@@ -4,6 +4,9 @@ import ReactMapGL from 'react-map-gl'
 import { MAP_OPTIONS } from '../../constants/map'
 import * as actions from '../../actions/voronoi'
 import { connectTo, takeFromState } from '../../utils/generic'
+import SVGOverlay from './SVG-overlay'
+import { Point } from '../../geometry/point';
+import Contour from './contour'
 
 
 class Map extends React.Component {
@@ -14,7 +17,9 @@ class Map extends React.Component {
       zoom,
       latitude,
       longitude,
-      onMapUpdate,
+      updateMap,
+      updateProjections,
+      cityGeoJson
     } = this.props
     const mapProps = {
       ...MAP_OPTIONS,
@@ -23,12 +28,35 @@ class Map extends React.Component {
       zoom,
       latitude,
       longitude,
-      onViewportChange: onMapUpdate
+      onViewportChange: updateMap
     }
     return (
       <ReactMapGL {...mapProps} ref="reactMap">
-
+        {cityGeoJson &&
+          <SVGOverlay
+            redraw={this.redraw}
+            updateProjections={updateProjections}
+          />
+        }
       </ReactMapGL>
+    )
+  }
+
+  redraw = ({ project, unproject }) => {
+    const { cityGeoJson } = this.props
+    console.log(cityGeoJson)
+    const contoursPoints = (cityGeoJson.type === 'MultiPolygon' ? cityGeoJson.coordinates.flatten_() : cityGeoJson.coordinates).map(coordinates => coordinates.map(([ x, y ]) => project(new Point(x, y))))
+    return (
+      <g>
+        {
+          contoursPoints.map((points, index) => (
+            <Contour
+              key={index}
+              points={points}
+            />
+          ))
+        }
+      </g>
     )
   }
 
@@ -40,7 +68,6 @@ class Map extends React.Component {
     const { updateMap, cityBoundingBox } = this.props
     if (prev.cityBoundingBox !== cityBoundingBox && this.map) {
       const [minLng, maxLng, minLat, maxLat] = cityBoundingBox
-      console.log([[minLat, minLng], [maxLat, maxLng]])
       this.map.fitBounds([[minLat, minLng], [maxLat, maxLng]], {
         padding: 0
       })

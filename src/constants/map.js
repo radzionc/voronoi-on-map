@@ -17,3 +17,4 @@ export const MOCK_END_LOCATION = {
   latitude: 53.8893322,
   longitude: 27.4151778
 }
+export const EARTH_MEAN_RADIUS = 6378137
