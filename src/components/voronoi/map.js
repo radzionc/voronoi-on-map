@@ -7,6 +7,7 @@ import { connectTo, takeFromState } from '../../utils/generic'
 import SVGOverlay from './SVG-overlay'
 import { Point } from '../../geometry/point';
 import Contour from './contour'
+import Place from './place'
 
 
 class Map extends React.Component {
@@ -43,15 +44,21 @@ class Map extends React.Component {
   }
 
   redraw = ({ project, unproject }) => {
-    const { cityGeoJson } = this.props
-    console.log(cityGeoJson)
+    const { cityGeoJson, places } = this.props
+    const placesPoints = places.map(p => new Point(p.geometry.location.lng(), p.geometry.location.lat())).map(project)
+    console.log(placesPoints)
     const contoursPoints = (cityGeoJson.type === 'MultiPolygon' ? cityGeoJson.coordinates.flatten_() : cityGeoJson.coordinates).map(coordinates => coordinates.map(([ x, y ]) => project(new Point(x, y))))
     return (
       <g>
         {
+          placesPoints.map(({ x, y }, index) => (
+            <Place key={'place' + index} x={x} y={y} />
+          ))
+        }
+        {
           contoursPoints.map((points, index) => (
             <Contour
-              key={index}
+              key={'contour' + index}
               points={points}
             />
           ))
@@ -67,8 +74,7 @@ class Map extends React.Component {
   componentDidUpdate(prev) {
     const { updateMap, cityBoundingBox } = this.props
     if (prev.cityBoundingBox !== cityBoundingBox && this.map) {
-      const [minLng, maxLng, minLat, maxLat] = cityBoundingBox
-      this.map.fitBounds([[minLat, minLng], [maxLat, maxLng]], {
+      this.map.fitBounds(cityBoundingBox, {
         padding: 0
       })
       this.map.on('moveend', () =>

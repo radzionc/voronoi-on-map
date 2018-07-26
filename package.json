@@ -22,7 +22,8 @@
     "redux-devtools-extension": "^2.13.2",
     "redux-form": "^7.3.0",
     "redux-saga": "^0.16.0",
-    "turf": "^3.0.14"
+    "turf": "^3.0.14",
+    "turf-clip": "0.0.1"
   },
   "scripts": {
     "mockrun": "REACT_APP_MOCK=true react-scripts start",

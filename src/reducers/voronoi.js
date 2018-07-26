@@ -12,6 +12,8 @@ const DEFAULT_STATE = {
   cityHover: false,
   cityBoundingBox: undefined,
   cityGeoJson: undefined,
+  hiddenGoogleMap: undefined,
+  places: [],
   unproject: x => x,
   project: x => x,
 }
@@ -32,7 +34,9 @@ export default createReducer(
     [a.changeCityInputValue]: (state, cityInputValue) => ({ ...state, cityInputValue}),
     [a.toggleCityHover]: (state) => ({ ...state, cityHover: !state.cityHover }),
     [a.startSearchingNewCity]: (state) => ({ ...state, city: undefined, cityInputValue: '', cityHover: false}),
-    [a.receiveCity]: (state, { boundingbox, geojson }) => ({ ...state, cityBoundingBox: boundingbox, cityGeoJson: geojson})
+    [a.receiveCity]: (state, { boundingbox, geojson }) => ({ ...state, cityBoundingBox: boundingbox, cityGeoJson: geojson}),
+    [a.saveHiddenGoogleMap]: (state, hiddenGoogleMap) => ({ ...state, hiddenGoogleMap }),
+    [a.updatePlaces]: (state, places) => ({ ...state, places })
   },
   DEFAULT_STATE
 )
