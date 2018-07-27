@@ -10,6 +10,7 @@ const DEFAULT_STATE = {
 
 export default createReducer(
   {
+    [a.changePageSize]: (state, { width, height }) => ({ ...state, pageWidth: width, pageHeight: height }),
     [a.saveInstallProposalEvent]: (state, installProposalEvent) => ({
       ...state,
       installProposalEvent

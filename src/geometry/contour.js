@@ -1,10 +1,7 @@
 import _ from 'lodash'
-import polyBool from 'polybooljs'
-import * as d3 from 'd3'
 import ClipperLib from '../clipper'
 import turf from 'turf'
 
-import { stringToFloats } from '../utils/testing'
 import { Point } from './point'
 import { segmentsFromPoints, Segment } from './segment'
 import { EPSILON } from '../constants/generic'
@@ -44,28 +41,10 @@ export class Contour {
   segments() {
     return segmentsFromPoints(this.points)
   }
-  toPolyboolPolygon() {
-    return {
-      regions: [this.points.map_('array')]
-    }
-  }
   isPointInside(point) {
     const pointInPolygon = this.isPointFullyInside(point)
     const pointOnThEdge = this.segments().some_('isPointInside', point)
     return pointInPolygon || pointOnThEdge
-  }
-  isPointFullyInside(point) {
-    return d3.polygonContains(this.points.map_('array'), point.array())
-  }
-  joinWith(other) {
-    return polyBoolPolygonToContour(
-      polyBool.union(this.toPolyboolPolygon(), other.toPolyboolPolygon())
-    )
-  }
-  difference(other) {
-    return polyBoolPolygonToContour(
-      polyBool.difference(this.toPolyboolPolygon(), other.toPolyboolPolygon())
-    )
   }
   pointOnEdge(point) {
     return this.segments().some_('isPointInside', point)
@@ -225,26 +204,10 @@ const signedPolygonArea = points =>
 const isClockwise = points =>
   points.length < 3 ? false : signedPolygonArea(points) < 0
 
-const polyBoolPolygonToContour = polyboolPolygon =>
-  new Contour(polyboolPolygon.regions[0].map(([x, y]) => new Point(x, y)))
 
 export const contoursConnectedWithSegment = (contours, segment) =>
   contours.filter(contour =>
     contour.segments().some_('isSegmentInside', segment)
-  )
-
-export const contourFromString = str =>
-  new Contour(
-    stringToFloats(str).reduce(
-      (acc, num, index) =>
-        index % 2 === 0
-          ? [...acc, num]
-          : [
-              ...acc.slice(0, acc.length - 1),
-              new Point(acc[acc.length - 1], num)
-            ],
-      []
-    )
   )
 
 export const mergeAll = contours => {

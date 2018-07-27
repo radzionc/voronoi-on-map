@@ -7,6 +7,7 @@ import { connectTo, takeFromState } from '../../utils/generic'
 import SVGOverlay from './SVG-overlay'
 import { Point } from '../../geometry/point';
 import Contour from './contour'
+import Rectangle from './rectangle'
 import Place from './place'
 
 
@@ -44,12 +45,16 @@ class Map extends React.Component {
   }
 
   redraw = ({ project, unproject }) => {
-    const { cityGeoJson, places } = this.props
+    const { cityGeoJson, places, rectangles } = this.props
     const placesPoints = places.map(p => new Point(p.geometry.location.lng(), p.geometry.location.lat())).map(project)
-    console.log(placesPoints)
     const contoursPoints = (cityGeoJson.type === 'MultiPolygon' ? cityGeoJson.coordinates.flatten_() : cityGeoJson.coordinates).map(coordinates => coordinates.map(([ x, y ]) => project(new Point(x, y))))
     return (
       <g>
+        {
+          rectangles.map(({ points }, index) => (
+            <Rectangle key={'rectangle' + index} points={points.map(project)}/>
+          ))
+        }
         {
           placesPoints.map(({ x, y }, index) => (
             <Place key={'place' + index} x={x} y={y} />

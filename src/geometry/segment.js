@@ -1,7 +1,4 @@
-import * as d3 from 'd3'
-
 import { areEqual } from '../utils/generic'
-import { stringToFloats } from '../utils/testing'
 import Vector from './vector'
 import { Point } from './point'
 import { Contour } from './contour'
@@ -185,16 +182,6 @@ export class Segment {
     return new Segment(...this.array().map(func))
   }
 
-  svgLine() {
-    return d3
-      .select('svg')
-      .append('line')
-      .attr('x1', this.start.x)
-      .attr('y1', this.start.y)
-      .attr('x2', this.end.x)
-      .attr('y2', this.end.y)
-  }
-
   extendOn(number) {
     const vector = this.vector().withLength(number)
     return new Segment(
@@ -221,9 +208,6 @@ export class Segment {
 
 export const segmentFromNumbers = (x1, y1, x2, y2) =>
   new Segment(new Point(x1, y1), new Point(x2, y2))
-
-export const segmentFromString = str =>
-  segmentFromNumbers(...stringToFloats(str))
 
 export const segmentsFromPoints = points =>
   points.slice(0).map((point, index) => {
