@@ -9,6 +9,7 @@ import { Point } from '../../geometry/point';
 import Contour from './contour'
 import Rectangle from './rectangle'
 import Place from './place'
+import { STAGES } from '../../constants/voronoi';
 
 
 class Map extends React.Component {
@@ -21,7 +22,8 @@ class Map extends React.Component {
       longitude,
       updateMap,
       updateProjections,
-      cityGeoJson
+      cityGeoJson,
+      inFly
     } = this.props
     const mapProps = {
       ...MAP_OPTIONS,
@@ -34,7 +36,7 @@ class Map extends React.Component {
     }
     return (
       <ReactMapGL {...mapProps} ref="reactMap">
-        {cityGeoJson &&
+        {cityGeoJson && !inFly &&
           <SVGOverlay
             redraw={this.redraw}
             updateProjections={updateProjections}
@@ -44,8 +46,9 @@ class Map extends React.Component {
     )
   }
 
-  redraw = ({ project, unproject }) => {
-    const { cityGeoJson, places, rectangles } = this.props
+  redraw = ({ project }) => {
+    const { cityGeoJson, places, rectangles, stage } = this.props
+    if ([STAGES.SEARCH_CITY, STAGES.SEARCH_CITY, STAGES.IN_FLY].includes(stage)) return null
     const placesPoints = places.map(p => new Point(p.geometry.location.lng(), p.geometry.location.lat())).map(project)
     const contoursPoints = (cityGeoJson.type === 'MultiPolygon' ? cityGeoJson.coordinates.flatten_() : cityGeoJson.coordinates).map(coordinates => coordinates.map(([ x, y ]) => project(new Point(x, y))))
     return (
@@ -77,19 +80,25 @@ class Map extends React.Component {
   }
 
   componentDidUpdate(prev) {
-    const { updateMap, cityBoundingBox } = this.props
+    const { cityBoundingBox } = this.props
     if (prev.cityBoundingBox !== cityBoundingBox && this.map) {
       this.map.fitBounds(cityBoundingBox, {
         padding: 0
       })
-      this.map.on('moveend', () =>
-        updateMap({
-          zoom: this.map.getZoom(),
-          longitude: this.map.getCenter().lng,
-          latitude: this.map.getCenter().lat
-        })
-      )
+      this.map.on('moveend', this.onMoveEnd)
     }
+  }
+
+  onMoveEnd = () => {
+    const { updateMap, endFlyToCity } = this.props
+
+    endFlyToCity()
+    updateMap({
+      zoom: this.map.getZoom(),
+      longitude: this.map.getCenter().lng,
+      latitude: this.map.getCenter().lat
+    })
+    this.map.off('moveend', this.onMoveEnd)
   }
 }
 

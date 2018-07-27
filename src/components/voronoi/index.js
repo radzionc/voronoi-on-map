@@ -4,22 +4,27 @@ import React from 'react'
 
 import Page from '../page'
 import Map from './map'
-import CityInput from './city-input'
-import CityName from './city-name'
+import TopNavigation from './top-navigation'
 import { connectTo } from '../../utils/generic';
 import { saveHiddenGoogleMap } from '../../actions/voronoi'
+import CityInput from './city-input'
+import Places from './places'
+import { STAGES } from '../../constants/voronoi';
 
 export default connectTo(
   state => state.voronoi,
   { saveHiddenGoogleMap },
   class Voronoi extends React.Component {
     render() {
-      const { city } = this.props
+      const { stage } = this.props
+      console.log(stage)
       return (
         <Page style={{ height: '100%' }}>
           <div style={{ position: 'absolute', zIndex: -100}} ref='hiddenGoogleMap'></div>
           <Map/>
-          {city ? <CityName/> :  <CityInput/>}
+          <TopNavigation/>
+          {stage === STAGES.SEARCH_CITY && <CityInput/>}
+          {stage === STAGES.SELECT_PLACE_TYPE && <Places/>}
         </Page>
       )
     }
