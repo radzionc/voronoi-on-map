@@ -3,9 +3,10 @@
 import { put, call, select } from 'redux-saga/effects'
 import { delay } from 'redux-saga'
 import turf from 'turf'
+import * as d3 from 'd3-voronoi'
 
 import { get } from '../utils/api'
-import { startSearchingNewCity, receiveCity, updatePlaces, updateResearchedRectangles, finishPlacesResearch } from '../actions/voronoi'
+import { startSearchingNewCity, receiveCity, updateResearchedRectangles } from '../actions/voronoi'
 import { Point } from '../geometry/point';
 import { Contour } from '../geometry/contour'
 import { STAGES } from '../constants/voronoi'
@@ -44,16 +45,21 @@ export function* selectCity({ payload }) {
   }
 }
 
+const getPolygons = (rect, points) => {
+  const voronoi = d3.voronoi().extent([rect.slice(0, 2), rect.slice(2)])
+  return voronoi.polygons(points.map_('array')).map(poly => new Contour(poly.map(([x,y]) => new Point(x, y)))).filter(p => p)
+}
+
 export function* selectPlace({ payload }) {
   const { voronoi: { hiddenGoogleMap, cityBoundingBox }} = yield select()
 
-  let places = []
   let researchedRects = []
   let unresearchedRects = [cityBoundingBox.flatten_()]
   while(unresearchedRects.length) {
+    const rect = unresearchedRects[0]
+    unresearchedRects = unresearchedRects.slice(1)
     
-    
-    const [minLat, minLng, maxLat, maxLng] = unresearchedRects[0]
+    const [minLat, minLng, maxLat, maxLng] = rect
     const request = {
       bounds: new google.maps.LatLngBounds(
         new google.maps.LatLng(minLng, minLat),
@@ -78,13 +84,15 @@ export function* selectPlace({ payload }) {
       if (stage !== STAGES.VORONOI) return
       yield call(delay, 500)
     }
-    const bboxPolygon = turf.bboxPolygon(unresearchedRects[0]).geometry.coordinates[0].slice(0, 4)
-    unresearchedRects = unresearchedRects.slice(1)
+    const bboxPolygon = turf.bboxPolygon(rect).geometry.coordinates[0].slice(0, 4)
     if (rectPlaces.length !== MAX_NUMBER_OF_PLACES) {
-      places = [...places, ...rectPlaces]
-      yield put(updatePlaces(places))
-
-      researchedRects = [...researchedRects, new Contour(bboxPolygon.map(([ x, y ]) => new Point(x, y)))]
+      const points = rectPlaces.map(p => new Point(p.geometry.location.lng(), p.geometry.location.lat()))
+      const contour = new Contour(bboxPolygon.map(([ x, y ]) => new Point(x, y)))
+      researchedRects = [...researchedRects, {
+        contour,
+        places: points,
+        polygons: getPolygons(rect, points)
+      }]
       yield put(updateResearchedRectangles(researchedRects))
     }
     else {
@@ -94,5 +102,13 @@ export function* selectPlace({ payload }) {
       ]
     }
   }
-  yield put(finishPlacesResearch())
+
+  const bboxPolygon = turf.bboxPolygon(cityBoundingBox.flatten_()).geometry.coordinates[0].slice(0, 4)
+  const contour = new Contour(bboxPolygon.map(([ x, y ]) => new Point(x, y)))
+  const places = researchedRects.take_('places').flatten_()
+  yield put(updateResearchedRectangles([{
+    contour,
+    places,
+    polygons: getPolygons(cityBoundingBox.flatten_(), places)
+  }]))
 }

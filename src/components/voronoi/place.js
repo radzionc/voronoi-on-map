@@ -1,6 +1,6 @@
 import React from 'react'
-import orange from '@material-ui/core/colors/orange'
+import pink from '@material-ui/core/colors/pink'
 
 export default ({ x, y }) => (
-  <circle cx={x} cy={y} r="2" fill={orange.A200} />
+  <circle cx={x} cy={y} r="4" fill={pink.A200} />
 )

@@ -9,6 +9,7 @@ import { Point } from '../../geometry/point';
 import Contour from './contour'
 import Rectangle from './rectangle'
 import Place from './place'
+import Cell from './cell'
 import { STAGES } from '../../constants/voronoi';
 
 
@@ -47,15 +48,24 @@ class Map extends React.Component {
   }
 
   redraw = ({ project }) => {
-    const { cityGeoJson, places, rectangles, stage } = this.props
+    const { cityGeoJson, rectangles, stage } = this.props
+    const rects = rectangles.take_('contour')
+    const cells = rectangles.take_('polygons').flatten_()
+    console.log(cells)
+    const places = rectangles.take_('places').flatten_()
     if ([STAGES.SEARCH_CITY, STAGES.SEARCH_CITY, STAGES.IN_FLY].includes(stage)) return null
-    const placesPoints = places.map(p => new Point(p.geometry.location.lng(), p.geometry.location.lat())).map(project)
+    const placesPoints = places.map(project)
     const contoursPoints = (cityGeoJson.type === 'MultiPolygon' ? cityGeoJson.coordinates.flatten_() : cityGeoJson.coordinates).map(coordinates => coordinates.map(([ x, y ]) => project(new Point(x, y))))
     return (
       <g>
         {
-          rectangles.map(({ points }, index) => (
+          rects.map(({ points }, index) => (
             <Rectangle key={'rectangle' + index} points={points.map(project)}/>
+          ))
+        }
+        {
+          cells.map(({ points }, index) => (
+            <Cell key={'cell' + index} points={points.map(project)} />
           ))
         }
         {
