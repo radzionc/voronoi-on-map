@@ -3,7 +3,7 @@
 import { put, call, select } from 'redux-saga/effects'
 import { delay } from 'redux-saga'
 import turf from 'turf'
-import * as d3 from 'd3-voronoi'
+import turfVoronoi from '@turf/voronoi'
 
 import { get } from '../utils/api'
 import { startSearchingNewCity, receiveCity, updateResearchedRectangles } from '../actions/voronoi'
@@ -12,6 +12,7 @@ import { Contour } from '../geometry/contour'
 import { STAGES } from '../constants/voronoi'
 
 const MAX_NUMBER_OF_PLACES = 60
+const MAX_AREA_FOR_SEARCH = 60000000
 
 const split = rectangle => {
   const firstDistance = turf.distance(...rectangle.slice(0, 2))
@@ -46,8 +47,28 @@ export function* selectCity({ payload }) {
 }
 
 const getPolygons = (rect, points) => {
-  const voronoi = d3.voronoi().extent([rect.slice(0, 2), rect.slice(2)])
-  return voronoi.polygons(points.map_('array')).map(poly => new Contour(poly.map(([x,y]) => new Point(x, y)))).filter(p => p)
+  const [minLat, minLng, maxLat, maxLng] = rect
+  const voronoiPolygons = turfVoronoi(
+    {
+      type: "FeatureCollection",
+      features: points
+        .map_('array').map_('reverse_').reduce((acc,p) => acc.find(([x, y]) => x === p[0] && y === p[1]) ? acc : [...acc, p], [])
+        .map((coordinates) => ({
+          type: "Feature",
+          geometry: {
+            type: 'Point',
+            coordinates
+          }
+        }))
+    },
+    {
+      bbox: [minLng, minLat, maxLng, maxLat]
+    }
+  ).features
+  .map(({ geometry: { coordinates } }) => coordinates[0].withoutLast_().map(([ y, x ]) => new Point(x, y)))
+  .map(points => new Contour(points))
+  .filter(c => c)
+  return voronoiPolygons
 }
 
 export function* selectPlace({ payload }) {
@@ -58,7 +79,15 @@ export function* selectPlace({ payload }) {
   while(unresearchedRects.length) {
     const rect = unresearchedRects[0]
     unresearchedRects = unresearchedRects.slice(1)
-    
+    const bboxPolygon = turf.bboxPolygon(rect).geometry.coordinates[0].slice(0, 4)
+    const area = turf.area(turf.bboxPolygon(rect))
+    if (area > MAX_AREA_FOR_SEARCH) {
+      unresearchedRects = [
+        ...unresearchedRects,
+        ...split(bboxPolygon)
+      ]
+      continue
+    }
     const [minLat, minLng, maxLat, maxLng] = rect
     const request = {
       bounds: new google.maps.LatLngBounds(
@@ -84,7 +113,6 @@ export function* selectPlace({ payload }) {
       if (stage !== STAGES.VORONOI) return
       yield call(delay, 500)
     }
-    const bboxPolygon = turf.bboxPolygon(rect).geometry.coordinates[0].slice(0, 4)
     if (rectPlaces.length !== MAX_NUMBER_OF_PLACES) {
       const points = rectPlaces.map(p => new Point(p.geometry.location.lng(), p.geometry.location.lat()))
       const contour = new Contour(bboxPolygon.map(([ x, y ]) => new Point(x, y)))

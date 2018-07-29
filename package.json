@@ -4,7 +4,9 @@
   "private": true,
   "dependencies": {
     "@material-ui/core": "^1.4.0",
+    "@turf/voronoi": "^5.1.5",
     "cra-append-sw": "^2.3.0",
+    "d3-geo-voronoi": "0.0.6",
     "d3-voronoi": "^1.1.2",
     "downshift": "^2.0.16",
     "keycode": "^2.2.0",

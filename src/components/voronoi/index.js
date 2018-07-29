@@ -17,7 +17,6 @@ export default connectTo(
   class Voronoi extends React.Component {
     render() {
       const { stage } = this.props
-      console.log(stage)
       return (
         <Page style={{ height: '100%' }}>
           <div style={{ position: 'absolute', zIndex: -100}} ref='hiddenGoogleMap'></div>

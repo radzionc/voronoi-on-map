@@ -51,7 +51,6 @@ class Map extends React.Component {
     const { cityGeoJson, rectangles, stage } = this.props
     const rects = rectangles.take_('contour')
     const cells = rectangles.take_('polygons').flatten_()
-    console.log(cells)
     const places = rectangles.take_('places').flatten_()
     if ([STAGES.SEARCH_CITY, STAGES.SEARCH_CITY, STAGES.IN_FLY].includes(stage)) return null
     const placesPoints = places.map(project)
