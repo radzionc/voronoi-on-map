@@ -10,6 +10,7 @@ const DEFAULT_STATE = {
   zoom: MAP_OPTIONS.zoom,
   latitude: MAP_OPTIONS.latitude,
   longitude: MAP_OPTIONS.longitude,
+  snackBarMessage: '',
 
   city: undefined,
   cityInputValue: '',
@@ -23,6 +24,7 @@ const DEFAULT_STATE = {
   project: x => x,
 
   place: undefined,
+  snackbarMessage: ''
 }
 
 export default createReducer(
@@ -64,7 +66,8 @@ export default createReducer(
       stage: STAGES.SELECT_PLACE_TYPE
     }),
     [a.togglePlaceHover]: (state) => ({ ...state, placeHover: !state.placeHover }),
-    [a.selectPlace]: (state, place) => ({ ...state, place, stage: STAGES.VORONOI })
+    [a.selectPlace]: (state, place) => ({ ...state, place, stage: STAGES.VORONOI }),
+    [a.toggleSnackbar]: (state, snackbarMessage) => ({ ...state, snackbarMessage }),
     // [a.finishPlacesResearch]: (state) => ({ ...state, rectangles: [] })
   },
   DEFAULT_STATE

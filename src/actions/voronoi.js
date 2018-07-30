@@ -17,3 +17,5 @@ export const saveHiddenGoogleMap = createAction()
 export const updateResearchedRectangles = createAction()
 export const finishPlacesResearch = createAction()
 export const endFlyToCity = createAction()
+
+export const toggleSnackbar = createAction()
