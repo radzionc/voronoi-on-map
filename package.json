@@ -7,6 +7,7 @@
     "@material-ui/icons": "^2.0.0",
     "@turf/voronoi": "^5.1.5",
     "cra-append-sw": "^2.3.0",
+    "d3": "^5.5.0",
     "d3-geo-voronoi": "0.0.6",
     "d3-voronoi": "^1.1.2",
     "downshift": "^2.0.16",

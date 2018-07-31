@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import ClipperLib from '../clipper'
 import turf from 'turf'
+import * as d3 from 'd3'
 
 import { Point } from './point'
 import { segmentsFromPoints, Segment } from './segment'
@@ -45,6 +46,9 @@ export class Contour {
     const pointInPolygon = this.isPointFullyInside(point)
     const pointOnThEdge = this.segments().some_('isPointInside', point)
     return pointInPolygon || pointOnThEdge
+  }
+  isPointFullyInside(point) {
+    return d3.polygonContains(this.points.map_('array'), point.array())
   }
   pointOnEdge(point) {
     return this.segments().some_('isPointInside', point)

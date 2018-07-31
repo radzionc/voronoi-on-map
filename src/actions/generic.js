@@ -6,3 +6,4 @@ export const exitPage = createAction()
 export const changePageSize = createAction()
 
 export const saveInstallProposalEvent = createAction()
+export const moveMouse = createAction()

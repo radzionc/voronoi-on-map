@@ -10,8 +10,9 @@ import Contour from './contour'
 import Rectangle from './rectangle'
 import Place from './place'
 import Cell from './cell'
+import SpecialCell from './special-cell'
 import { STAGES } from '../../constants/voronoi';
-
+import { getPolygons } from '../../utils/voronoi'
 
 class Map extends React.Component {
   render() {
@@ -47,28 +48,54 @@ class Map extends React.Component {
     )
   }
 
-  redraw = ({ project }) => {
-    const { cityGeoJson, rectangles, stage } = this.props
-    const rects = rectangles.take_('contour')
-    const cells = rectangles.take_('polygons').flatten_()
-    const places = rectangles.take_('places').flatten_()
+  redraw = ({ project, unproject }) => {
+    const { cityGeoJson, rectangles, stage, mouseX, mouseY } = this.props
     if ([STAGES.SEARCH_CITY, STAGES.SEARCH_CITY, STAGES.IN_FLY].includes(stage)) return null
-    const placesPoints = places.map(project)
+
+
+    const rects = rectangles.take_('contour').map(contour => contour.map(project))
+    const places = rectangles.take_('places').flatten_().map(project)
     const contoursPoints = (cityGeoJson.type === 'MultiPolygon' ? cityGeoJson.coordinates.flatten_() : cityGeoJson.coordinates).map(coordinates => coordinates.map(([ x, y ]) => project(new Point(x, y))))
+    
+    let cells = rectangles.take_('polygons').flatten_().map(contour => contour.map(project))
+    let specialCell = undefined
+    const mousePoint = new Point(mouseX, mouseY)
+    const mouseRect = rects.find(rect => rect.isPointInside(mousePoint))
+    try {
+      if (mouseRect) {
+        const initialRectangle = rectangles[rects.indexOf(mouseRect)]
+        const newRectCells = getPolygons(
+          [
+            ...initialRectangle.contour.points[0].array(),
+            ...initialRectangle.contour.points[2].array()
+          ],
+          [...initialRectangle.places, unproject(mousePoint)]
+        ).map(contour => contour.map(project))
+        cells = [
+          ...rectangles.without_(initialRectangle).take_('polygons').flatten_().map(contour => contour.map(project)),
+          ...newRectCells
+        ]
+        specialCell = cells.find(c => c.isPointInside(mousePoint))
+        cells = cells.without_(specialCell)
+      }
+    } catch(err) {(() => null)(err)}
     return (
       <g>
         {
           rects.map(({ points }, index) => (
-            <Rectangle key={'rectangle' + index} points={points.map(project)}/>
+            <Rectangle key={'rectangle' + index} points={points}/>
           ))
         }
         {
           cells.map(({ points }, index) => (
-            <Cell key={'cell' + index} points={points.map(project)} />
+            <Cell key={'cell' + index} points={points} />
           ))
         }
         {
-          placesPoints.map(({ x, y }, index) => (
+          specialCell && <SpecialCell key={'specialCell'} points={specialCell.points}/>
+        }
+        {
+          places.map(({ x, y }, index) => (
             <Place key={'place' + index} x={x} y={y} />
           ))
         }
@@ -114,7 +141,8 @@ class Map extends React.Component {
 export default connectTo(
   state => ({
     ...takeFromState(state, 'generic', ['pageWidth', 'pageHeight']),
-    ...state.voronoi
+    ...state.voronoi,
+    ...state.generic
   }),
   actions,
   Map

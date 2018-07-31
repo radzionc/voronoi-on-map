@@ -8,7 +8,8 @@ import {
   enterPage,
   exitPage,
   changePageSize,
-  saveInstallProposalEvent
+  saveInstallProposalEvent,
+  moveMouse
 } from '../actions/generic'
 import { back } from '../actions/navigation'
 
@@ -52,6 +53,7 @@ class Page extends React.Component {
       this.props.enterPage()
     window.addEventListener('resize', this.windowSizeChanged)
     window.addEventListener('popstate', this.popstate)
+    document.addEventListener('mousemove', this.onMouseMove)
     window.addEventListener('beforeinstallprompt', e => {
       e.preventDefault()
       this.props.saveInstallProposalEvent(e)
@@ -66,7 +68,10 @@ class Page extends React.Component {
       this.props.exitPage(this.page)
     window.removeEventListener('resize', this.windowSizeChanged)
     window.removeEventListener('popstate', this.popstate)
+    document.removeEventListener('mousemove', this.onMouseMove)
   }
+
+  onMouseMove = ({ clientX, clientY }) => this.props.moveMouse({ mouseX: clientX, mouseY: clientY })
 
   windowSizeChanged = () => {
     this.props.changePageSize({
@@ -82,6 +87,6 @@ export default connectTo(
     stateReceived: state.cache.stateReceived[state.navigation.page],
     inEnterPage: state.generic.inEnterPage
   }),
-  { enterPage, exitPage, changePageSize, saveInstallProposalEvent, back },
+  { enterPage, exitPage, changePageSize, saveInstallProposalEvent, back, moveMouse },
   Page
 )

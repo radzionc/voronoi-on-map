@@ -5,7 +5,9 @@ const DEFAULT_STATE = {
   pageWidth: window.innerWidth,
   pageHeight: window.innerHeight,
   installProposalEvent: undefined,
-  inEnterPage: false
+  inEnterPage: false,
+  mouseX: 0,
+  mouseY: 0
 }
 
 export default createReducer(
@@ -17,6 +19,7 @@ export default createReducer(
     }),
     [a.finishEnterPage]: state => ({ ...state, inEnterPage: false }),
     [a.enterPage]: state => ({ ...state, inEnterPage: true }),
+    [a.moveMouse]: (state, mouse) => ({ ...state, ...mouse })
   },
   DEFAULT_STATE
 )

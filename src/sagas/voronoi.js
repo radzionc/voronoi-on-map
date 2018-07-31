@@ -3,13 +3,13 @@
 import { put, call, select } from 'redux-saga/effects'
 import { delay } from 'redux-saga'
 import turf from 'turf'
-import turfVoronoi from '@turf/voronoi'
 
 import { get } from '../utils/api'
 import { startSearchingNewCity, receiveCity, updateResearchedRectangles, toggleSnackbar, startSearchingNewPlace } from '../actions/voronoi'
 import { Point } from '../geometry/point';
 import { Contour } from '../geometry/contour'
 import { STAGES } from '../constants/voronoi'
+import { getPolygons } from '../utils/voronoi'
 
 const MAX_NUMBER_OF_PLACES = 60
 const MAX_AREA_FOR_SEARCH = 60000000
@@ -45,31 +45,6 @@ export function* selectCity({ payload }) {
     const [minLng, maxLng, minLat, maxLat] = city.boundingbox.map(Number)
     yield put(receiveCity(({ ...city, boundingbox: [[minLat, minLng], [maxLat, maxLng]] })))
   }
-}
-
-const getPolygons = (rect, points) => {
-  const [minLat, minLng, maxLat, maxLng] = rect
-  const voronoiPolygons = turfVoronoi(
-    {
-      type: "FeatureCollection",
-      features: points
-        .map_('array').map_('reverse_').reduce((acc,p) => acc.find(([x, y]) => x === p[0] && y === p[1]) ? acc : [...acc, p], [])
-        .map((coordinates) => ({
-          type: "Feature",
-          geometry: {
-            type: 'Point',
-            coordinates
-          }
-        }))
-    },
-    {
-      bbox: [minLng, minLat, maxLng, maxLat]
-    }
-  ).features
-    .map(({ geometry: { coordinates } }) => coordinates[0].withoutLast_().map(([ y, x ]) => new Point(x, y)))
-    .map(points => new Contour(points))
-    .filter(c => c)
-  return voronoiPolygons
 }
 
 export function* selectPlace({ payload }) {
