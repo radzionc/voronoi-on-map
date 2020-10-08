@@ -16,7 +16,7 @@ echo 'REACT_APP_MAPBOX_TOKEN=<YOUR_MAPBOX_TOKEN>' >> .env
 npm run  
 ```
 
-## [Story on Medium](https://medium.com/@geekrodion/voronoi-diagram-and-google-places-in-react-app-32c1185f6a0)
+## [Blog Post](https://geekrodion.com/blog/voronoi-on-map)
 
 ## License
 
