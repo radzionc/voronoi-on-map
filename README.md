@@ -1,5 +1,5 @@
-# voronoi-on-map
-
+# Voronoi on Map
+Building a React app with Voronoi diagram of places in a city
 > 
 
 ## [Demo](https://rodionchachura.github.io/voronoi-on-map/)
@@ -17,6 +17,11 @@ npm run
 ```
 
 ## [Blog Post](https://geekrodion.com/blog/voronoi-on-map)
+
+## Technologies
+* React
+* MapboxGL
+* Google Places API
 
 ## License
 
